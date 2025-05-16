@@ -1,6 +1,6 @@
 FROM ghcr.io/astral-sh/uv:python3.13-bookworm
 
-ADD . /app
+COPY . /app
 
 WORKDIR /app
 

@@ -1,3 +1,11 @@
+"""
+A simple authorization proxy for SLURM Rest API
+
+It checks the incoming token (from Check-in) and maps it to a local user
+either directly by using one of the available claims or by using
+ALISE (https://github.com/m-team-kit/alise).
+"""
+
 import hashlib
 from urllib.parse import quote_plus
 
