@@ -41,11 +41,6 @@ except httpx.RequestError as exc:
     app.logger.info("Unable to get oidc config")
     app.logger.debug(exc)
 
-user_map_function = map_user
-# figure out if we use ALISE
-if all(app.config.get(v) for v in ["ALISE_URL", "ALISE_API_KEY", "ALISE_TARGET"]):
-    user_map_function = map_user_alise
-
 
 def get_user_info(access_token):
     try:
@@ -131,6 +126,12 @@ def get_slurm_token(slurm_user):
         return f.read().strip()
 
 
+user_map_function = map_user
+# figure out if we use ALISE
+if all(app.config.get(v) for v in ["ALISE_URL", "ALISE_API_KEY", "ALISE_TARGET"]):
+    user_map_function = map_user_alise
+
+
 @app.route("/authorize")
 def authorize():
     app.logger.debug("Authorization attemp")
@@ -139,7 +140,7 @@ def authorize():
     access_token = validate_access_token(auth_header)
     app.logger.debug("Access token validated")
     response = make_response()
-    slurm_user = map_user(access_token)
+    slurm_user = user_map_function(access_token)
     app.logger.debug(f"Mapping user as {slurm_user}")
     response.headers["X-SLURM-USER-NAME"] = slurm_user
     response.headers["X-SLURM-USER-TOKEN"] = get_slurm_token(slurm_user)
