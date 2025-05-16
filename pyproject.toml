@@ -1,0 +1,13 @@
+[project]
+name = "slurm-auth-proxy"
+version = "0.1.0"
+description = "An authorization proxy for SLURM Rest"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "cryptography>=44.0.3",
+    "flask>=3.1.0",
+    "gunicorn>=23.0.0",
+    "httpx>=0.28.1",
+    "pyjwt>=2.10.1",
+]
