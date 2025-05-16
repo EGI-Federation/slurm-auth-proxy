@@ -11,7 +11,7 @@ from urllib.parse import quote_plus
 
 import httpx
 import jwt
-from flask import Flask, abort, jsonify, make_response, request
+from flask import Flask, abort, make_response, request
 from jwt.exceptions import DecodeError, PyJWTError
 
 app = Flask(__name__)
@@ -32,7 +32,7 @@ app.config.from_prefixed_env()
 
 # get the OIDC configration
 try:
-    r = httpx.get(OPENID_CONFIG)
+    r = httpx.get(app.config["OPENID_CONFIG"])
     config = r.json()
     app.config["JWKS_URI"] = config.get("jwks_uri", "")
     app.config["OIDC_ISSUER"] = config.get("issuer", "")
