@@ -14,9 +14,7 @@ import jwt
 from flask import Flask, abort, make_response, request
 from jwt.exceptions import DecodeError, PyJWTError
 
-
 app = Flask(__name__)
-
 app.config.from_mapping(
     # OIDC config discovery
     OPENID_CONFIG="https://aai.egi.eu/auth/realms/egi/.well-known/openid-configuration",
