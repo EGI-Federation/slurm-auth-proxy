@@ -17,9 +17,7 @@ from jwt.exceptions import DecodeError, PyJWTError
 app = Flask(__name__)
 app.config.from_mapping(
     # OIDC config discovery
-    OPENID_CONFIG=(
-        "https://aai.egi.eu/auth/realms/" "egi/.well-known/openid-configuration"
-    ),
+    OPENID_CONFIG="https://aai.egi.eu/auth/realms/egi/.well-known/openid-configuration",
     # User name claim
     USERNAME_CLAIM="sub",
     # Alise endpoint, if all values defined,
@@ -27,11 +25,15 @@ app.config.from_mapping(
     ALISE_URL="https://alise.data.kit.edu/",
     ALISE_API_KEY="",
     ALISE_TARGET="",
+    # Location of the slurm token
+    SLURM_TOKEN="/slurm-auth/token",
 )
-app.config.from_prefixed_env()
+app.config.from_prefixed_env("AUTH_PROXY")
+
 
 # get the OIDC configration
 try:
+    app.logger.debug(f"Getting config from {app.config['OPENID_CONFIG']}")
     r = httpx.get(app.config["OPENID_CONFIG"])
     config = r.json()
     app.config["JWKS_URI"] = config.get("jwks_uri", "")
@@ -40,6 +42,7 @@ try:
 except httpx.RequestError as exc:
     app.logger.info("Unable to get oidc config")
     app.logger.debug(exc)
+    raise
 
 
 def get_user_info(access_token):
@@ -121,9 +124,13 @@ def validate_access_token(auth_header):
 
 
 def get_slurm_token(slurm_user):
-    app.logger.debug(f"Get token from /auth/slurm for {slurm_user}")
-    with open("/auth/slurm") as f:
-        return f.read().strip()
+    app.logger.debug(f"Get token from {app.config['SLURM_TOKEN']} for {slurm_user}")
+    try:
+        with open(app.config["SLURM_TOKEN"]) as f:
+            return f.read().strip()
+    except OSError as e:
+        app.logger.error(f"Unable to get token from {app.config['SLURM_TOKEN']}: {e}")
+        abort(401)
 
 
 user_map_function = map_user

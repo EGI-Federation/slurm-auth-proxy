@@ -1,0 +1,30 @@
+services:
+  nginx-proxy:
+    image: nginx:stable
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/template-variables:/etc/nginx/templates/10-variables.conf.template:ro
+    depends_on:
+      - "slurm-auth-proxy"
+    environment:
+      # Set this to your Slurm rest host, should be reachable from the container
+      SLURM_ENDPOINT: "http://slurm-rest:9200"
+
+  slurm-auth-proxy:
+    hostname: slurm-auth-proxy
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      # This is where a long live token for slurm is available
+      # scontrol token username=slurm lifespan=9999999 | sed 's#SLURM_JWT=##g' > ./slurm-auth/token
+      - "./slurm-auth:/slurm-auth"
+    expose:
+      - 8000
+    environment:
+      # Overriding the OpenID Config with Check-in dev
+      AUTH_PROXY_OPENID_CONFIG: "https://aai-dev.egi.eu/auth/realms/egi/.well-known/openid-configuration"
+      # set to True for debugging
+      # AUTH_PROXY_DEBUG: "True"
